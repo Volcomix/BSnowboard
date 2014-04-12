@@ -69,14 +69,14 @@ def print_shader_errors(shader, task, code):
     print()
     print(bytes(log[:length[0]]).decode())
 
-def init_shader():
+def init_shader(controller):
     global shader
     global program
     
     shader = glCreateShader(GL_FRAGMENT_SHADER)
     success = Buffer(GL_INT, 1)
     
-    shadersource = bpy.data.texts['motionblur.glsl'].as_string()
+    shadersource = controller.actuators['MotionBlur'].shaderText
     glShaderSource(shader, shadersource)
     
     glCompileShader(shader)
@@ -197,7 +197,7 @@ def init(controller):
     init_viewport()
     init_camera(controller)
     init_textures()
-    init_shader()
+    init_shader(controller)
     init_filter(controller)
 
 def free():

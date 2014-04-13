@@ -3,7 +3,7 @@ import bge
 from bge import logic
 from bgl import *
 
-# Missing constant in Blender OpenGL Wrapper
+# These constants are missing from Blender OpenGL Wrapper
 GL_CLAMP_TO_EDGE = 33071
 GL_LINK_STATUS = 35714
 GL_VALIDATE_STATUS = 35715
@@ -40,6 +40,7 @@ def init_textures():
     
     glGenTextures(2, texname)
     
+    # Render texture
     glBindTexture(GL_TEXTURE_2D, texname[0])
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texturewidth, textureheight, 0, GL_RGBA, GL_UNSIGNED_BYTE, teximage[0])
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
@@ -47,6 +48,7 @@ def init_textures():
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
     
+    # Depth texture
     glBindTexture(GL_TEXTURE_2D, texname[1])
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, texturewidth, textureheight, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, teximage[1])
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE)
@@ -59,6 +61,13 @@ def free_textures():
     glDeleteTextures(2, texname)
 
 def print_shader_errors(shader, task, code):
+    """Print shader compilation errors to console.
+    
+    shader (int): The compiled shader object.
+    task (string): The task which failed shader compilation.
+        This is an helper string to be displayed in console.
+    code (string): The shader source code.
+    """
     log = Buffer(GL_BYTE, [5000])
     length = Buffer(GL_INT, 1)
     glGetShaderInfoLog(shader, len(log), length, log)
@@ -108,23 +117,25 @@ def free_shader():
 def draw_filter():
     global viewprojectionmatrix
     
+    # Copy render to texture
     glActiveTexture(GL_TEXTURE0)
     glBindTexture(GL_TEXTURE_2D, texname[0])
     glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, viewport[0], viewport[1], viewport[2], viewport[3], 0)
     
+    # Copy depth to texture
     glActiveTexture(GL_TEXTURE1)
     glBindTexture(GL_TEXTURE_2D, texname[1])
     glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, viewport[0], viewport[1], viewport[2], viewport[3], 0)
     
-    # reverting to texunit 0, without this we get bug [#28462]
+    # Reverting to texunit 0, without this we get bug [#28462]
     glActiveTexture(GL_TEXTURE0)
     
     glDisable(GL_DEPTH_TEST)
-    # in case the previous material was wire
+    # In case the previous material was wire
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
-    # if the last rendered face had alpha add it would messes with the color of the plane we apply 2DFilter to
+    # If the last rendered face had alpha add it would messes with the color of the plane we apply 2DFilter to
     glDisable(GL_BLEND)
-    # fix for [#34523] alpha buffer is now available for all OSs
+    # Fix for [#34523] alpha buffer is now available for all OSs
     glDisable(GL_ALPHA_TEST)
     
     glPushMatrix() # GL_MODELVIEW

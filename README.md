@@ -1,4 +1,4 @@
-bSnowboard
+BSnowboard
 ==========
 
 The goal of this project is to create a free simulation-like snowboard game made with free and OpenSource softwares, running on Blender Game Engine.

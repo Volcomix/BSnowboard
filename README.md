@@ -1,7 +1,7 @@
 BSnowboard
 ==========
 
-The goal of this project is to create a free simulation-like snowboard game made with free and OpenSource softwares, running on Blender Game Engine.
+The goal of this project is to create a free simulation-like snowboarding game with free and OpenSource softwares. This game will run on Blender Game Engine.
 The game aims having a good gameplay, good speed sensations and great GPU effects.
 
 For now, used softwares are :

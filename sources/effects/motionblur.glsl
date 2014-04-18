@@ -11,7 +11,7 @@ void main(void)
 {
     vec2 texCoord = gl_TexCoord[0].st;
     vec4 color = texture2D(sceneSampler, texCoord);
-    float depth = texture2D(depthTexture, texCoord);
+    float depth = float(texture2D(depthTexture, texCoord));
     if (color.a == 1.0)
     {
         vec4 H = vec4(texCoord.x * 2 - 1, (1 - texCoord.y) * 2 - 1, depth, 1);
@@ -21,7 +21,7 @@ void main(void)
         vec4 currentPos = H;
         vec4 previousPos = worldPos * previousViewProjectionMatrix;
         previousPos /= previousPos.w;
-        vec2 velocity = (currentPos - previousPos) / detail;
+        vec2 velocity = vec2(currentPos - previousPos) / detail;
         
         int addedSamples = 1;
         texCoord += velocity;

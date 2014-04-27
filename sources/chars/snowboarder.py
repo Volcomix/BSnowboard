@@ -26,7 +26,7 @@ def update(controller):
     orimat = snowboarder.worldOrientation
     z = orimat.col[2]
     direction = snowboarder.worldPosition - z
-    object, hitpoint, normal = snowboarder.rayCast(direction, None, air_raydist, 'ground', 1)
+    object, hitpoint, normal = snowboarder.rayCast(direction, None, air_raydist, 'ground', 1, 1)
 
     if hitpoint:
         ray = hitpoint - snowboarder.worldPosition

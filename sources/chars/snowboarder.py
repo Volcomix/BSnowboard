@@ -47,17 +47,29 @@ def update(controller):
             ori = orimat.col[0]
 
         xalign = ori.cross(normal)
+        yalign = normal.cross(xalign)
+        zalign = normal
+        
+        xalign.normalize()
+        yalign.normalize()
+        zalign.normalize()
 
-        y = normal.cross(xalign)
-        x = y.cross((0, 0, 1))
-        z = x.cross(y)
+        y = yalign
+        x = yalign.cross((0, 0, 1))
+        z = x.cross(yalign)
 
         x.normalize()
         y.normalize()
         z.normalize()
         
-        orimat.col[0] = x
-        orimat.col[1] = y
-        orimat.col[2] = z
+        orimat.col[0] = xalign
+        orimat.col[1] = yalign
+        orimat.col[2] = zalign
+        
+        armature = logic.getCurrentScene().objects['Armature']
+        armaori = mathutils.Matrix([[x.x, y.x, z.x],
+                                    [x.y, y.y, z.y],
+                                    [x.z, y.z, z.z]])
+        armature.localOrientation = orimat.inverted() * armaori
     else:
         snowboarder['onground'] = False

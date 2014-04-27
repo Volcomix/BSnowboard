@@ -35,6 +35,7 @@ def update(controller):
         if dist_squared < ground_raydist_squared:
             snowboarder['onground'] = True
             filter = ground_alignfilter
+            snowboarder.localLinearVelocity.x = 0
         else:
             snowboarder['onground'] = False
             filter = air_alignfilter

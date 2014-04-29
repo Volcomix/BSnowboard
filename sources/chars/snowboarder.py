@@ -64,9 +64,16 @@ def update(controller):
     yalign.normalize()
     zalign.normalize()
 
+    filter = 0.9
+    hdir = snowboarder['hdir']
+    
     y = yalign
-    x = yalign.cross((0, 0, 1))
-    z = x.cross(yalign)
+    if not snowboarder['onground'] or hdir == 0:
+        x = filter * armature.worldOrientation.col[0] + (1.0 - filter) * y.cross((0, 0, 1))
+        z = x.cross(y)
+    else:
+        z = filter * armature.worldOrientation.col[2] - (1.0 - filter) * (0.6 * hdir * xalign - 0.4 * zalign)
+        x = y.cross(z)
 
     x.normalize()
     y.normalize()

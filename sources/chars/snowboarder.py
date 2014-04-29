@@ -4,7 +4,7 @@ import mathutils
 EPSILON = 1.0e-10
 
 #Air properties
-air_raydist = 2
+air_raydist = 1.5
 air_aligndamping = 50
 
 # Ground properties
@@ -18,7 +18,12 @@ air_alignfilter = air_aligndamping / (1.0 + air_aligndamping)
 ground_alignfilter = ground_aligndamping / (1.0 + ground_aligndamping)
 ground_raydist_squared = ground_raydist * ground_raydist
 
+armature = logic.getCurrentScene().objects['Armature']
+ground_normal = None
+
 def update(controller):
+    global ground_normal
+    
     snowboarder = controller.owner
     
     snowboarder['fakie'] = snowboarder.localLinearVelocity.y > 0
@@ -30,46 +35,48 @@ def update(controller):
 
     if hitpoint:
         ray = hitpoint - snowboarder.worldPosition
-        dist_squared = ray.length_squared
-        
-        if dist_squared < ground_raydist_squared:
-            snowboarder['onground'] = True
-            filter = ground_alignfilter
-            snowboarder.localLinearVelocity.x = 0
-        else:
-            snowboarder['onground'] = False
-            filter = air_alignfilter
-        
-        normal = filter * z + (1.0 - filter) * normal
-        
-        ori = orimat.col[1]
-        if abs(normal.dot(ori)) > 1 - 3 * EPSILON:
-            ori = orimat.col[0]
-
-        xalign = ori.cross(normal)
-        yalign = normal.cross(xalign)
-        zalign = normal
-        
-        xalign.normalize()
-        yalign.normalize()
-        zalign.normalize()
-
-        y = yalign
-        x = yalign.cross((0, 0, 1))
-        z = x.cross(yalign)
-
-        x.normalize()
-        y.normalize()
-        z.normalize()
-        
-        orimat.col[0] = xalign
-        orimat.col[1] = yalign
-        orimat.col[2] = zalign
-        
-        armature = logic.getCurrentScene().objects['Armature']
-        armaori = mathutils.Matrix([[x.x, y.x, z.x],
-                                    [x.y, y.y, z.y],
-                                    [x.z, y.z, z.z]])
-        armature.localOrientation = orimat.inverted() * armaori
+        snowboarder['onground'] = ray.length_squared < ground_raydist_squared
     else:
         snowboarder['onground'] = False
+    
+    if snowboarder['onground']:
+        filter = ground_alignfilter
+        snowboarder.localLinearVelocity.x = 0
+    else:
+        filter = air_alignfilter
+    
+    if normal:
+        ground_normal = normal
+    else:
+        normal = ground_normal
+    
+    normal = filter * z + (1.0 - filter) * normal
+        
+    ori = orimat.col[1]
+    if abs(normal.dot(ori)) > 1 - 3 * EPSILON:
+        ori = orimat.col[0]
+
+    xalign = ori.cross(normal)
+    yalign = normal.cross(xalign)
+    zalign = normal
+    
+    xalign.normalize()
+    yalign.normalize()
+    zalign.normalize()
+
+    y = yalign
+    x = yalign.cross((0, 0, 1))
+    z = x.cross(yalign)
+
+    x.normalize()
+    y.normalize()
+    z.normalize()
+    
+    orimat.col[0] = xalign
+    orimat.col[1] = yalign
+    orimat.col[2] = zalign
+    
+    armaori = mathutils.Matrix([[x.x, y.x, z.x],
+                                [x.y, y.y, z.y],
+                                [x.z, y.z, z.z]])
+    armature.localOrientation = orimat.inverted() * armaori

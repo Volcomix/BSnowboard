@@ -10,13 +10,16 @@ air_aligndamping = 50
 # Ground properties
 ground_raydist = 0.15
 ground_aligndamping = 5
+ground_tiltdamping = 10
+ground_maxtilt = 0.4 # in range [0..1]
 
 # Air constants
 air_alignfilter = air_aligndamping / (1.0 + air_aligndamping)
 
 # Ground constants
-ground_alignfilter = ground_aligndamping / (1.0 + ground_aligndamping)
 ground_raydist_squared = ground_raydist * ground_raydist
+ground_alignfilter = ground_aligndamping / (1.0 + ground_aligndamping)
+ground_tiltfilter = ground_tiltdamping / (1.0 + ground_tiltdamping)
 
 armature = logic.getCurrentScene().objects['Armature']
 ground_normal = None
@@ -64,7 +67,7 @@ def update(controller):
     yalign.normalize()
     zalign.normalize()
 
-    filter = 0.9
+    filter = ground_tiltfilter
     hdir = snowboarder['hdir']
     
     y = yalign
@@ -72,7 +75,8 @@ def update(controller):
         x = filter * armature.worldOrientation.col[0] + (1.0 - filter) * y.cross((0, 0, 1))
         z = x.cross(y)
     else:
-        z = filter * armature.worldOrientation.col[2] - (1.0 - filter) * (0.6 * hdir * xalign - 0.4 * zalign)
+        tilt = (1.0 - ground_maxtilt) * hdir * xalign - ground_maxtilt * zalign
+        z = filter * armature.worldOrientation.col[2] - (1.0 - filter) * tilt
         x = y.cross(z)
 
     x.normalize()

@@ -71,13 +71,13 @@ def update(controller):
     hdir = snowboarder['hdir']
     
     y = yalign
-    if not snowboarder['onground'] or hdir == 0:
-        x = filter * armature.worldOrientation.col[0] + (1.0 - filter) * y.cross((0, 0, 1))
-        z = x.cross(y)
-    else:
+    if snowboarder['onground'] and hdir != 0 and not snowboarder['crouch']:
         tilt = (1.0 - ground_maxtilt) * hdir * xalign - ground_maxtilt * zalign
         z = filter * armature.worldOrientation.col[2] - (1.0 - filter) * tilt
         x = y.cross(z)
+    else:
+        x = filter * armature.worldOrientation.col[0] + (1.0 - filter) * y.cross((0, 0, 1))
+        z = x.cross(y)
 
     x.normalize()
     y.normalize()

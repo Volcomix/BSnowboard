@@ -12,6 +12,7 @@ ground_raydist = 0.15
 ground_aligndamping = 5
 ground_tiltdamping = 10
 ground_maxtilt = 0.4 # in range [0..1]
+ground_turnfactor = 0.02
 
 # Air constants
 air_alignfilter = air_aligndamping / (1.0 + air_aligndamping)
@@ -78,7 +79,14 @@ def update(controller):
     else:
         x = filter * armature.worldOrientation.col[0] + (1.0 - filter) * y.cross((0, 0, 1))
         z = x.cross(y)
-
+    
+    turn = controller.actuators['Turn']
+    if snowboarder['onground']:
+        turn.dRot = [0, 0, xalign.dot(z) * ground_turnfactor]
+        controller.activate(turn)
+    else:
+        controller.deactivate(turn)
+    
     x.normalize()
     y.normalize()
     z.normalize()

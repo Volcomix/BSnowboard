@@ -12,7 +12,8 @@ ground_raydist = 0.15
 ground_aligndamping = 5
 ground_tiltdamping = 10
 ground_maxtilt = 0.4 # in range [0..1]
-ground_turnfactor = 0.02
+ground_turnfactor = 0.03
+ground_turnthreshold = 0.1
 
 # Air constants
 air_alignfilter = air_aligndamping / (1.0 + air_aligndamping)
@@ -72,24 +73,35 @@ def update(controller):
     hdir = snowboarder['hdir']
     
     y = yalign
+    hori = y.cross((0, 0, 1))
     if snowboarder['onground'] and hdir != 0 and not snowboarder['crouch']:
         tilt = (1.0 - ground_maxtilt) * hdir * xalign - ground_maxtilt * zalign
         z = filter * armature.worldOrientation.col[2] - (1.0 - filter) * tilt
         x = y.cross(z)
     else:
-        x = filter * armature.worldOrientation.col[0] + (1.0 - filter) * y.cross((0, 0, 1))
+        x = filter * armature.worldOrientation.col[0] + (1.0 - filter) * hori
         z = x.cross(y)
-    
-    turn = controller.actuators['Turn']
-    if snowboarder['onground']:
-        turn.dRot = [0, 0, xalign.dot(z) * ground_turnfactor]
-        controller.activate(turn)
-    else:
-        controller.deactivate(turn)
     
     x.normalize()
     y.normalize()
     z.normalize()
+    
+    turn = controller.actuators['Turn']
+    if snowboarder['onground']:
+        hori = hori.dot(zalign)
+        tilt = x.dot(zalign)
+        diff = hori - tilt
+        if abs(diff) > ground_turnthreshold:
+            if diff < 0:
+                tilt = diff / (1 - hori)
+            else:
+                tilt = diff / (1 + hori)
+            turn.dRot = [0, 0, tilt * ground_turnfactor]
+            controller.activate(turn)
+        else:
+            controller.deactivate(turn)
+    else:
+        controller.deactivate(turn)
     
     orimat.col[0] = xalign
     orimat.col[1] = yalign

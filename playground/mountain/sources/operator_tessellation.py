@@ -48,8 +48,8 @@ def init_shader():
     
     success = Buffer(GL_INT, 1)
     
-    vertex_shader = load_shader(GL_VERTEX_SHADER, 'terrain.vert')
-    fragment_shader = load_shader(GL_FRAGMENT_SHADER, 'terrain.frag')
+    vertex_shader = load_shader(GL_VERTEX_SHADER, 'tessellation.vert')
+    fragment_shader = load_shader(GL_FRAGMENT_SHADER, 'tessellation.frag')
     
     if not vertex_shader or not fragment_shader:
         return

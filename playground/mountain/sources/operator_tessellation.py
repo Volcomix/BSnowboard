@@ -78,6 +78,11 @@ def free_shader():
 def draw_callback_px(self, context):
     glEnable(GL_BLEND)
     glColor4f(1.0, 0.0, 0.0, 0.5)
+    
+    if context.space_data.show_only_render:
+        glFrontFace(GL_CW)
+    else:
+        glFrontFace(GL_CCW)
 
     glPushMatrix() # GL_MODELVIEW
     
@@ -131,6 +136,7 @@ def draw_callback_px(self, context):
     # restore opengl defaults
     glDisable(GL_BLEND)
     glColor4f(0.0, 0.0, 0.0, 1.0)
+    glFrontFace(GL_CCW)
 
 
 class ModalDrawOperator(bpy.types.Operator):

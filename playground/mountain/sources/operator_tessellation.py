@@ -2,11 +2,19 @@ import bpy
 from bgl import *
 import mathutils
 
+from ctypes import *
 
 # These constants are missing from Blender OpenGL Wrapper
 GL_LINK_STATUS = 35714
 GL_VALIDATE_STATUS = 35715
+GL_TESS_CONTROL_SHADER = 36488
+GL_TESS_EVALUATION_SHADER = 36487
+GL_PATCH_VERTICES = 36466
+GL_PATCHES = 14
 
+# These functions are missing from Blender OpenGL Wrapper
+prototype = WINFUNCTYPE(None, c_int, c_int)
+glPatchParameteri = prototype(cdll.opengl32.wglGetProcAddress(b'glPatchParameteri'))
 
 def print_shader_errors(shader, task, code):
     """Print shader compilation errors to console.
@@ -44,19 +52,25 @@ def load_shader(type, filename):
 def init_shader():
     global vertex_shader
     global fragment_shader
+    global tcs_shader
+    global tes_shader
     global program
     
     success = Buffer(GL_INT, 1)
     
     vertex_shader = load_shader(GL_VERTEX_SHADER, 'tessellation.vert')
     fragment_shader = load_shader(GL_FRAGMENT_SHADER, 'tessellation.frag')
+    tcs_shader = load_shader(GL_TESS_CONTROL_SHADER, 'tessellation.tcs')
+    tes_shader = load_shader(GL_TESS_EVALUATION_SHADER, 'tessellation.tes')
     
-    if not vertex_shader or not fragment_shader:
+    if not vertex_shader or not fragment_shader or not tcs_shader or not tes_shader:
         return
     
     program = glCreateProgram()
     glAttachShader(program, vertex_shader)
     glAttachShader(program, fragment_shader)
+    glAttachShader(program, tcs_shader)
+    glAttachShader(program, tes_shader)
     
     glLinkProgram(program)
     glGetProgramiv(program, GL_LINK_STATUS, success)
@@ -74,6 +88,8 @@ def free_shader():
     if program: glDeleteProgram(program)
     if fragment_shader: glDeleteShader(fragment_shader)
     if vertex_shader: glDeleteShader(vertex_shader)
+    if tcs_shader: glDeleteShader(tcs_shader)
+    if tes_shader: glDeleteShader(tes_shader)
 
 def draw_callback_px(self, context):
     glEnable(GL_BLEND)
@@ -108,24 +124,27 @@ def draw_callback_px(self, context):
     
     uniform_loc = glGetUniformLocation(program, 'unf7')
     light_direction = Buffer(GL_FLOAT, 3, sun_ray.normalized())
-    glUniform3fv(uniform_loc, 1, light_direction);
+    glUniform3fv(uniform_loc, 1, light_direction)
     
     # vec4 unf19 type11 GPU_DYNAMIC_LAMP_DYNCOL => diffuse
     uniform_loc = glGetUniformLocation(program, 'unf19')
     light_diffuse = Buffer(GL_FLOAT, 4, (1.0, 1.0, 1.0, 1.0))
     glUniform4fv(uniform_loc, 1, light_diffuse)
     
-    # vec3 unf44; type 11 GPU_DYNAMIC_LAMP_DYNCOL => specular
+    # vec3 unf44 type 11 GPU_DYNAMIC_LAMP_DYNCOL => specular
     uniform_loc = glGetUniformLocation(program, 'unf44')
     light_specular = Buffer(GL_FLOAT, 3, (1.0, 1.0, 1.0))
     glUniform3fv(uniform_loc, 1, light_specular)
+    
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+    
+    glPatchParameteri(GL_PATCH_VERTICES, 1)
 
-    glBegin(GL_QUADS)
-    glVertex3f(-1.0, -1.0, 0.0)
-    glVertex3f(1.0, -1.0, 0.0)
-    glVertex3f(1.0, 1.0, 0.0)
-    glVertex3f(-1.0, 1.0, 0.0)
+    glBegin(GL_PATCHES)
+    glVertex3f(0.0, 0.0, 0.0)
     glEnd()
+    
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
     
     glUseProgram(0)
     

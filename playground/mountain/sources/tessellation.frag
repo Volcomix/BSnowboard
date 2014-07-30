@@ -2506,6 +2506,6 @@ void main(void)
 	shade_alpha_opaque(tmp59, tmp61);
 	linearrgb_to_srgb(tmp61, tmp63);
 
-	gl_FragColor = tmp63;
+	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);//tmp63;
 }
 

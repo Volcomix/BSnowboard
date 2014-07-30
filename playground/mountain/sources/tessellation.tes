@@ -1,0 +1,22 @@
+#version 410 core
+
+layout(quads, equal_spacing, ccw) in;
+
+out vec3 normal;
+out vec3 vertex;
+
+out gl_PerVertex {
+    vec4 gl_Position;
+};
+
+void main() {
+    vec4 position = gl_in[0].gl_Position;
+    position.xy += gl_TessCoord.xy * 2.0 - 1.0;
+    
+    normal = vec3(0.0, 0.0, 1.0);
+    
+    gl_Position = gl_ModelViewProjectionMatrix * position;
+    
+    normal = (gl_ModelViewMatrix * vec4(normal, 0.0)).xyz;
+    vertex = vec3(gl_ModelViewMatrix * position);
+}

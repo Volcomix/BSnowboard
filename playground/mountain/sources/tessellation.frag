@@ -2441,8 +2441,8 @@ void material_preview_matcap(vec4 color, sampler2D ima, vec4 N, vec4 mask, out v
 	tex.y = 0.5 + 0.49 * normal.y;
 	result = texture2D(ima, tex) * mask;
 }
-varying vec3 varnormal;
-varying vec3 varposition;
+in vec3 varnormal;
+in vec3 varposition;
 uniform vec3 unf7;
 const float cons16 = float(0.800000);
 uniform vec4 unf19;
@@ -2506,6 +2506,6 @@ void main(void)
 	shade_alpha_opaque(tmp59, tmp61);
 	linearrgb_to_srgb(tmp61, tmp63);
 
-	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);//tmp63;
+	gl_FragColor = tmp63;
 }
 
